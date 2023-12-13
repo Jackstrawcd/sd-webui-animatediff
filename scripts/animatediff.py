@@ -28,23 +28,20 @@ class AnimateDiffScript(scripts.Script):
         self.prompt_scheduler = None
         self.hacked = False
 
-
     def title(self):
         return "AnimateDiff"
-
 
     def show(self, is_img2img):
         return scripts.AlwaysVisible
 
-
     def ui(self, is_img2img):
         return (AnimateDiffUiGroup().render(is_img2img, motion_module.get_model_dir()),)
 
-
     def before_process(self, p: StableDiffusionProcessing, params: AnimateDiffProcess):
-        if p.is_api and isinstance(params, dict):
+        if isinstance(params, dict):
             self.ad_params = AnimateDiffProcess(**params)
             params = self.ad_params
+
         if params.enable:
             logger.info("AnimateDiff process start.")
             params.set_p(p)
@@ -65,27 +62,27 @@ class AnimateDiffScript(scripts.Script):
             motion_module.restore(p.sd_model)
             self.hacked = False
 
-
     def before_process_batch(self, p: StableDiffusionProcessing, params: AnimateDiffProcess, **kwargs):
-        if p.is_api and isinstance(params, dict): params = self.ad_params
+        if  isinstance(params, dict):
+            params = self.ad_params
         if params.enable and isinstance(p, StableDiffusionProcessingImg2Img) and not hasattr(p, '_animatediff_i2i_batch'):
             AnimateDiffI2VLatent().randomize(p, params)
 
-
     def postprocess_batch_list(self, p: StableDiffusionProcessing, pp: PostprocessBatchListArgs, params: AnimateDiffProcess, **kwargs):
-        if p.is_api and isinstance(params, dict): params = self.ad_params
+        if  isinstance(params, dict):
+            params = self.ad_params
         if params.enable:
             self.prompt_scheduler.save_infotext_img(p)
 
-
     def postprocess_image(self, p: StableDiffusionProcessing, pp: PostprocessImageArgs, params: AnimateDiffProcess, *args):
-        if p.is_api and isinstance(params, dict): params = self.ad_params
+        if isinstance(params, dict):
+            params = self.ad_params
         if params.enable and isinstance(p, StableDiffusionProcessingImg2Img) and hasattr(p, '_animatediff_paste_to_full'):
             p.paste_to = p._animatediff_paste_to_full[p.batch_index]
 
-
     def postprocess(self, p: StableDiffusionProcessing, res: Processed, params: AnimateDiffProcess):
-        if p.is_api and isinstance(params, dict): params = self.ad_params
+        if  isinstance(params, dict):
+            params = self.ad_params
         if params.enable:
             self.prompt_scheduler.save_infotext_txt(res)
             self.cn_hacker.restore()
@@ -99,7 +96,7 @@ class AnimateDiffScript(scripts.Script):
 
 def on_ui_settings():
     section = ("animatediff", "AnimateDiff")
-    s3_selection =("animatediff", "AnimateDiff AWS") 
+    s3_selection = ("animatediff", "AnimateDiff AWS")
     shared.opts.add_option(
         "animatediff_model_path",
         shared.OptionInfo(
@@ -148,7 +145,8 @@ def on_ui_settings():
             default="",
             label="MP4 Encoding Preset",
             component=gr.Dropdown,
-            component_args={"choices": ["", 'veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast']},
+            component_args={"choices": ["", 'veryslow', 'slower', 'slow',
+                                        'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast']},
             section=section,
         )
         .link("docs", "https://trac.ffmpeg.org/wiki/Encode/H.264#Preset")
@@ -263,8 +261,9 @@ def on_ui_settings():
             gr.Textbox,
             section=s3_selection,
         ),
-    )    
-    
+    )
+
+
 script_callbacks.on_ui_settings(on_ui_settings)
 script_callbacks.on_after_component(AnimateDiffUiGroup.on_after_component)
 script_callbacks.on_before_ui(AnimateDiffUiGroup.on_before_ui)
