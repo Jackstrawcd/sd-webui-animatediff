@@ -8,7 +8,7 @@ from modules.devices import cpu, device, torch_gc
 
 from motion_module import MotionWrapper, MotionModuleType
 from scripts.animatediff_logger import logger_animatediff as logger
-
+from modules.paths import models_path
 
 class AnimateDiffMM:
     mm_injected = False
@@ -25,7 +25,8 @@ class AnimateDiffMM:
 
 
     def get_model_dir(self):
-        model_dir = shared.opts.data.get("animatediff_model_path", os.path.join(self.script_dir, "model"))
+        
+        model_dir = os.path.join(models_path, "animatediff")
         if not model_dir:
             model_dir = os.path.join(self.script_dir, "model")
         return model_dir
